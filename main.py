@@ -2,10 +2,10 @@
 import os 
 ROOT_DIR = os.getcwd()
 os.path.join(ROOT_DIR)
-print(ROOT_DIR)
-os.chdir(ROOT_DIR)
-ROOT_DIR = {""}
-os.system("cd {ROOT_DIR}")
+print("Path is ")
+os.system("pwd")
+# os.chdir(ROOT_DIR)
+# os.system("cd {ROOT_DIR}")
 
 import torch
 import cv2
@@ -89,8 +89,8 @@ for image_file in target_image_files:#takes 1 image
     before_image = cv2.cvtColor(before_image, cv2.COLOR_BGR2RGB)
     
   # face detector
-    os.system("cd {ROOT_DIR}")
-    os.system("python detect.py --weights weights/{weight} --image {original_image_file_path}")
+    # os.system("cd {ROOT_DIR}")
+    os.system(f"python detect.py --weights {ROOT_DIR}/weights/{weight} --image {original_image_file_path}")
 # os.remove(original_image_file_path)
 
 import face_recognition
