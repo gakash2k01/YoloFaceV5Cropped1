@@ -1,9 +1,16 @@
+# %%
 import os 
 ROOT_DIR = os.getcwd()
 os.path.join(ROOT_DIR)
+print(ROOT_DIR)
 
+# %% [markdown]
+# ### Should be in Bosch Directory
+
+# %%
 os.system(f"cd {ROOT_DIR}")
 
+# %%
 import torch
 import cv2
 import numpy as np
@@ -12,8 +19,8 @@ import time
 import torchvision.transforms as transforms
 import matplotlib.pyplot as plt
 from torch import nn
-import face_recognition
 
+# %%
 import cv2 
 
 key = cv2.waitKey(1)
@@ -38,7 +45,7 @@ while True:
             print("Camera off.")
             print("Program ended.")
             cv2.destroyAllWindows()
-            exit()
+            break
         
     except(KeyboardInterrupt):
         print("Turning off camera.")
@@ -48,6 +55,7 @@ while True:
         cv2.destroyAllWindows()
         break
 
+# %%
 path_to_file=ROOT_DIR + '/output/bbox_file.txt'
 if not os.path.exists(ROOT_DIR + '/output'):
   os.mkdir(ROOT_DIR + '/output')
@@ -89,6 +97,10 @@ for image_file in target_image_files:#takes 1 image
   # face detector
     os.system(f"cd {ROOT_DIR}")
     os.system(f"python detect.py --weights weights/{weight} --image {original_image_file_path}")
+# os.remove(original_image_file_path)
+
+# %%
+import face_recognition
 
 file = open(ROOT_DIR + '/dataset/Identities.txt','r')
 image = []
