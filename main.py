@@ -48,6 +48,10 @@ while True:
         cv2.destroyAllWindows()
         break
 
+from detection1 import test
+
+img_ppe = cv2.imread("data/images/test.jpg")
+test(img_ppe)
 path_to_file=ROOT_DIR + '/output/bbox_file.txt'
 if not os.path.exists(ROOT_DIR + '/output'):
   os.mkdir(ROOT_DIR + '/output')
@@ -157,3 +161,4 @@ for (top, right, bottom, left), name in zip(face_locations, face_names):
 cv2.imshow('Identity', frame)
 cv2.waitKey(5000)
 cv2.destroyAllWindows()
+
