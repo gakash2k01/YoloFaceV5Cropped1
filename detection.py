@@ -1,4 +1,6 @@
+# All imports
 import cv2, os
+os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
 import numpy as np
 import tensorflow as tf
 import matplotlib.pyplot as plt
@@ -50,6 +52,7 @@ def prepare_model():
     print(weight_path)
     model.load_weights( weight_path )
 
+
 def get_detection(img):
     # save a copy of the img
     act_img = img.copy()
@@ -81,29 +84,25 @@ def get_detection(img):
     boxes = boxes[0].numpy()
 
     # draw the detection on the actual image
-    return draw_detection(act_img, boxes, class_names)
+    return draw_detection(act_img, boxes, class_names), class_names
 
 def plt_imshow(img):
     plt.figure(figsize=(5, 5))
     plt.imshow(img)
     plt.axis('off')
 
-# prepare the model
-prepare_model()
 
 def test(img):
-    # read the image
-    # img = cv2.imread(f'/home/akash/Documents/learning/product_Yolov5/YoloFaceV5Cropped/data/images/test.jpg')
+    # prepare the model
+    prepare_model()
 
     # resize
     img = letterbox_image(img, input_shape)
 
     # get the detection on the image
-    img = get_detection(img)
+    img, class_names = get_detection(img)
 
     # show the image
-    cv2.imshow("Helmet test", img[:, :, ::-1])
-    cv2.WaitKey(5000)
-    cv2.destroyAllWindows()
-
-
+    # plt.imshow(img[:, :, ::-1])
+    cv2.imwrite(filename='result.jpg', img=img)
+    return class_names

@@ -4,6 +4,7 @@ os.path.join(ROOT_DIR)
 
 os.system(f"cd {ROOT_DIR}")
 
+# All imports 
 import torch
 import cv2
 import numpy as np
@@ -13,11 +14,18 @@ import torchvision.transforms as transforms
 import matplotlib.pyplot as plt
 from torch import nn
 import face_recognition
-
 import cv2 
+from detection import test
+import warnings
+warnings.filterwarnings('ignore')
 
+# Capturing the photo from video
 key = cv2.waitKey(1)
 webcam = cv2.VideoCapture(0)
+
+# Existing clicked image is deleted
+if os.path.exists(f'{ROOT_DIR}/data/images/test.jpg'):
+    os.remove(f'{ROOT_DIR}/data/images/test.jpg')
 while True:
     try:
         check, frame = webcam.read()
@@ -48,20 +56,24 @@ while True:
         cv2.destroyAllWindows()
         break
 
-from detection1 import test
 
-img_ppe = cv2.imread("data/images/test.jpg")
-test(img_ppe)
-path_to_file=ROOT_DIR + '/output/bbox_file.txt'
-if not os.path.exists(ROOT_DIR + '/output'):
-  os.mkdir(ROOT_DIR + '/output')
+# The saved image is read
+img_ppe = cv2.imread(f"{ROOT_DIR}/data/images/test.jpg")
+
+# For ppe_kit_detection using detection.py
+class_names = test(img_ppe)
+
+#For face attendance
+path_to_file = f'{ROOT_DIR}/output/bbox_file.txt'
+if not os.path.exists(f'{ROOT_DIR}/output'):
+    os.mkdir(ROOT_DIR + '/output')
 with open(path_to_file, 'w'):
     pass
 big_image_list=[]
 big_face_id=[]
 big_bbox_list=[]
 
-device = 'cuda' if torch.cuda.is_available() else 'cpu'
+device = 'cpu'
 
 image_size=128
 test_transforms = transforms.Compose([transforms.ToPILImage(),
@@ -72,7 +84,6 @@ test_transforms = transforms.Compose([transforms.ToPILImage(),
 
 
 ##loading yolo weights
-#options available : 5l-face.pt,5m-face,5s-face.pt
 weight='face5.pt'
 
 root_data_path=ROOT_DIR + '/data'
