@@ -22,6 +22,7 @@ warnings.filterwarnings('ignore')
 # Capturing the photo from video
 key = cv2.waitKey(1)
 webcam = cv2.VideoCapture(0)
+img_list = []
 
 # Existing clicked image is deleted
 if os.path.exists(f'{ROOT_DIR}/data/images/test.jpg'):
@@ -36,6 +37,7 @@ while True:
             webcam.release()
             img_new = cv2.imread(f'{ROOT_DIR}/data/images/test.jpg', cv2.COLOR_BGR2RGB)
             img_new = cv2.imshow("Captured Image", img_new)
+            img_list.append(frame)
             cv2.waitKey(1650)
             cv2.destroyAllWindows()
             print("Image saved!")
@@ -58,10 +60,11 @@ while True:
 
 
 # The saved image is read
-img_ppe = cv2.imread(f"{ROOT_DIR}/data/images/test.jpg")
+img_ppe = img_list[0]
 
-# For ppe_kit_detection using detection.py
+# For PPE Kit Detection
 class_names = test(img_ppe)
+
 
 #For face attendance
 path_to_file = f'{ROOT_DIR}/output/bbox_file.txt'
@@ -72,19 +75,6 @@ with open(path_to_file, 'w'):
 big_image_list=[]
 big_face_id=[]
 big_bbox_list=[]
-
-device = 'cpu'
-
-image_size=128
-test_transforms = transforms.Compose([transforms.ToPILImage(),
-                                     transforms.Resize((image_size,image_size)),
-                                     transforms.ToTensor(),
-                                     transforms.Normalize([0.5,0.5,0.5],
-                                                          [0.5,0.5,0.5])])
-
-
-##loading yolo weights
-weight='face5.pt'
 
 root_data_path=ROOT_DIR + '/data'
 dataset_path=root_data_path+'/images' ## set path of to-be-tested images
@@ -101,9 +91,9 @@ for image_file in target_image_files:#takes 1 image
     before_image=cv2.imread(original_image_file_path)
     before_image = cv2.cvtColor(before_image, cv2.COLOR_BGR2RGB)
     
-  # face detector
-    os.system(f"cd {ROOT_DIR}")
-    os.system(f"python detect.py --weights weights/{weight} --image {original_image_file_path}")
+# face detector
+from detect import detect
+faces = detect(img_ppe)
 
 file = open(ROOT_DIR + '/dataset/Identities.txt','r')
 image = []
@@ -123,9 +113,9 @@ known_face_names = names
 face_locations = []
 face_encodings = []
 face_names = []
-crop_path = f'{ROOT_DIR}/data/temp/faces/test_1.jpg'
-frame = cv2.imread(crop_path)
-
+# crop_path = f'{ROOT_DIR}/data/temp/faces/test_1.jpg'
+# frame = cv2.imread(crop_path)
+frame = faces
 # Resize frame of video to 1/4 size for faster face recognition processing
 small_frame = cv2.resize(frame, (0, 0), fx=0.25, fy=0.25)
 
@@ -166,10 +156,10 @@ for (top, right, bottom, left), name in zip(face_locations, face_names):
     cv2.rectangle(frame, (left, bottom - 35), (right, bottom), (0, 0, 255), cv2.FILLED)
     font = cv2.FONT_HERSHEY_DUPLEX
     cv2.putText(frame, name, (left + 6, bottom - 6), font, 1.0, (255, 255, 255), 1)
+    print("Got: ", name)
 
 # Display the resulting image
 
 cv2.imshow('Identity', frame)
 cv2.waitKey(5000)
 cv2.destroyAllWindows()
-

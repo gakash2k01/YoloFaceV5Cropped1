@@ -72,10 +72,10 @@ def show_results(img, xywh, conf,landmarks, class_num):
     cv2.waitKey(5000)
     return img
 
-def save_image(save_path,im_ind, xywh,img):
+def save_image(xywh,img):
     
     sha = img.shape
-    print("Shape is:", len(sha))
+    # print("Shape is:", len(sha))
     h = sha[0]
     w = sha[1]
     c = sha[2]
@@ -88,26 +88,16 @@ def save_image(save_path,im_ind, xywh,img):
     bbox=[min(y1,y2),min(x1,x2),abs(y1-y2),abs(x1-x2)]
     #crop
     img = img[max(y1-5,0): min(y2+5,h), max(x1-5,0):min(x2+5,w),:]
+    return bbox, img
 
-    #write
-    put_here=save_path+str(im_ind)+'.jpg'
-    print("Path is ", put_here)
-    cv2.imwrite(put_here,img)
-    return bbox
-
-def detect_one(model, image_path, device):
-    # Load model
+def detect_one(model, image_obtained, device):
     img_size = 800
     conf_thres = 0.3
     iou_thres = 0.5
 
-    image_name=image_path.split('/')[-1].split('.')[0]
-    # print("#######WORKING ON IMAGE: ",image_name)
-    save_path=f'{dir}/data/temp/faces/'+image_name+'_'
-    orgimg = cv2.imread(image_path)  # BGR
+    orgimg = image_obtained # BGR
     img0 = copy.deepcopy(orgimg)
-    print("Reached here")
-    assert orgimg is not None, 'Image Not Found ' + image_path
+    assert orgimg is not None, 'Image Not Found '
     h0, w0 = orgimg.shape[:2]  # orig hw
     r = img_size / max(h0, w0)  # resize image to img_size
     if r != 1:  # always resize down, only resize up if training with augmentation
@@ -158,33 +148,20 @@ def detect_one(model, image_path, device):
                 conf = det[j, 4].cpu().numpy()
                 landmarks = (det[j, 5:15].view(1, 10) / gn_lks).view(-1).tolist()
                 class_num = det[j, 15].cpu().numpy()
-                # orgimg = show_results(orgimg, xywh, conf, class_num)
-                # print("ORGIMAGE SHAPE: " ,orgimg.shape)
-                # print("XYWH IS:",xywh)
-                bounder=save_image(save_path,im_ind, xywh,orgimg)
+                bounder, faces=save_image(xywh,orgimg)
                 im_ind+=1
-                print(dir)
-                fo = open(f'{dir}/output/bbox_file.txt', "a")
+                fo = open(f'output/bbox_file.txt', "a")
                 fo.write(str(bounder))
                 fo.write('\n')
                 fo.close()
                 orgimg = show_results(orgimg, xywh, conf, landmarks, class_num)
-                save_image(save_path,im_ind, xywh,img)
+                save_image(xywh,img)
+                return faces
 
-
-
-
-if __name__ == '__main__':
-    parser = argparse.ArgumentParser()
-    parser.add_argument('--weights', nargs='+', type=str, default='weights/face5.pt', help='model.pt path(s)')
-    parser.add_argument('--image', type=str, default='data/images/test.jpg', help='source')  # file/folder, 0 for webcam
-    # parser.add_argument('--image', type=str, default='data/images', help='file/dir/URL/glob, 0 for webcam')
-    parser.add_argument('--img-size', type=int, default=640, help='inference size (pixels)')
-    opt = parser.parse_args()
-    os.getcwd()
-    dir = os.getcwd()
-    print(opt)
-    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-    print(device)
-    model = load_model(opt.weights, device)
-    detect_one(model, opt.image, device)
+def detect(img):
+    weights = 'weights/face5.pt'
+    device = 'cpu'
+    model = load_model(weights, device)
+    faces = detect_one(model, img, device)
+    device = 'cpu'
+    return faces
